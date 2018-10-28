@@ -2,6 +2,7 @@
 
 import torch
 from torch.utils.data.dataset import Dataset
+import skimage.transform as T
 
 import numpy as np
 
@@ -41,11 +42,14 @@ class DigitDataset(Dataset):
             If not grayscale, return pixel value matrix for RGB layers, else
             return grayscaled value. Pixel value in range [0.0, 1.0] inclusive.
         '''
-        img = mpimage.imread(
-            self.rootdir +
-            '字母数字符号大全_pic{}_{}_{}.png'
-            .format(digit, xrot, yrot)
-        )
+        try:
+            img = mpimage.imread(
+                self.rootdir +
+                '字母数字符号大全_pic{}_{}_{}.png'
+                .format(digit, xrot, yrot)
+            )
+        except FileNotFoundError:
+            return None
         img = img[:, :, :3]     # discard alpha channel
         if grayscale:
             img = np.sum(img, axis=2) / 3.0
@@ -66,17 +70,23 @@ class DigitDataset(Dataset):
         # get raw image name
         if len(args) == 3:
             discriptors = list(map(str, args))
+            img = self.imgread(*discriptors, grayscale=self.grayscale)
+
         else:
-            discriptors = list(map(
-                lambda pool: random.sample(pool, 1)[0],
-                [
-                    self.avail_digits,
-                    self.legal_rots['x'],
-                    self.legal_rots['y']
-                ]
-            ))
-        img = self.imgread(*discriptors, grayscale=self.grayscale)
+            img = None
+            while img is None:
+                discriptors = list(map(
+                    lambda pool: random.sample(pool, 1)[0],
+                    [
+                        self.avail_digits,
+                        self.legal_rots['x'],
+                        self.legal_rots['y']
+                    ]
+                ))
+                img = self.imgread(*discriptors, grayscale=self.grayscale)
+        img = T.resize(img, (224, 224), anti_aliasing=True)
         return ( img, tuple(map(int, discriptors)) )
+
 
     def __len__(self):
         return self.len

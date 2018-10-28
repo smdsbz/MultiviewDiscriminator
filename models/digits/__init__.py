@@ -1,3 +1,3 @@
 # -*- coding: utf-8 -*-
 
-from .model import InceptionNet
+from .model import DiscriminatorNet
