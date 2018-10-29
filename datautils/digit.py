@@ -109,9 +109,9 @@ class DigitDataset(Dataset):
         # data = [ self.sample() for _ in range(batch_size) ]
         data = []
         for st in range(batch_size):
-            print('collecting data: {:.2f}% ({} of {})'
-                  .format(st * 100.0 / batch_size, st, batch_size),
-                  end='\r')
+            # print('collecting data: {:.2f}% ({} of {})'
+            #       .format(st * 100.0 / batch_size, st, batch_size),
+            #       end='\r')
             data.append(self.sample())
         input_data = []
         truth_labels = []

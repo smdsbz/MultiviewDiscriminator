@@ -46,6 +46,7 @@ class DiscriminatorNet(nn.Module):
             what_orient (Tensor of (2,)): xrot and yrot, respectively.
         '''
         x = self.feature_extraction.features(x).view(x.shape[0], -1)  # only use feature extraction layers of pretrained net
+        x = x.detach()      # NOTE: leave feature extraction net undisturbed
         which_digit = self.which_digit_pred(x)
         what_orient = self.what_orient_pred(x)
         what_orient[:, 0].clamp_(0, 360)
