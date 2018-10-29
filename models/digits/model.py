@@ -21,19 +21,18 @@ class DiscriminatorNet(nn.Module):
         self.device = device
         # using InceptionV3 for feature extraction
         # self.feature_extraction = torchvision.models.inception_v3(pretrained=pretrained)
-        self.feature_extraction = torchvision.models.vgg16(pretrained=pretrained)
-        self.feature_extraction.train()
+        self.feature_extraction = torchvision.models.vgg16(pretrained=pretrained).eval()  # freeze its parameters!!!
         # sub-model for digit classification
         self.which_digit_pred = nn.Sequential(
-            nn.Linear(1000, 512, bias=True), nn.LeakyReLU(),
-            nn.Linear(512, 512, bias=True), nn.LeakyReLU(),
-            nn.Linear(512, 10)
+            nn.Linear(512 * 7 * 7, 4096, bias=True), nn.LeakyReLU(),
+            nn.Linear(4096, 4096, bias=True), nn.LeakyReLU(),
+            nn.Linear(4096, 10)
         )
         # sub-models for orienting
         self.what_orient_pred = nn.Sequential(
-            nn.Linear(1000, 512, bias=True), nn.LeakyReLU(),
-            nn.Linear(512, 512, bias=True), nn.LeakyReLU(),
-            nn.Linear(512, 2, bias=True)
+            nn.Linear(512 * 7 * 7, 4096, bias=True), nn.LeakyReLU(),
+            nn.Linear(4096, 4096, bias=True), nn.LeakyReLU(),
+            nn.Linear(4096, 2, bias=True)
         )
 
     def forward(self, x):
@@ -46,7 +45,7 @@ class DiscriminatorNet(nn.Module):
                 digit.
             what_orient (Tensor of (2,)): xrot and yrot, respectively.
         '''
-        x = self.feature_extraction(x)
+        x = self.feature_extraction.features(x).view(x.shape[0], -1)  # only use feature extraction layers of pretrained net
         which_digit = self.which_digit_pred(x)
         what_orient = self.what_orient_pred(x)
         what_orient[:, 0].clamp_(0, 360)
