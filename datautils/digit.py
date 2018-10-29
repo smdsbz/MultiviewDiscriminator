@@ -43,11 +43,10 @@ class DigitDataset(Dataset):
             return grayscaled value. Pixel value in range [0.0, 1.0] inclusive.
         '''
         try:
-            img = mpimage.imread(
-                self.rootdir +
-                '字母数字符号大全_pic{}_{}_{}.png'
-                .format(digit, xrot, yrot)
-            )
+            img = mpimage.imread(os.path.join(
+                self.rootdir,
+                '字母数字符号大全_pic{}_{}_{}.png' .format(digit, xrot, yrot)
+            ))
         except FileNotFoundError:
             return None
         img = img[:, :, :3]     # discard alpha channel
